@@ -1,34 +1,197 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-  <title>Example Document with Apteligent</title>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-  <script type="text/javascript" src="https://d1a62freaxhn7x.cloudfront.net/v2/24/crittercismClientLibraryMin.js"></script>
-  <script type="text/javascript">
-    $(document).ready(function () {
-      Crittercism.init({
-        appId: 'bf30cf5cafbd4243a0bcf998602e319800555300',
-        appVersion: '2.0',
-        debug: true
+  <head>
+    <title>HTML5 Demo</title>
+    <script type="text/javascript" src="https://d1a62freaxhn7x.cloudfront.net/v2/24/crittercismClientLibraryMin.js"></script>
+  </head>
+  <body bgcolor="#ECEBEB">
+    <script type="text/javascript">
+    function randomNext(m, n) {
+      // Random integer in [m, n), half open interval including m, excluding n .
+      return Math.floor(Math.random() * (n - m)) + m;
+    }
+    function breadcrumb() {
+      var newBreadcrumb = document.getElementById("breadcrumbText").value;
+      Crittercism.leaveBreadcrumb(newBreadcrumb);
+    }
+    function username() {
+      var newUsername = document.getElementById("usernameText").value;
+      Crittercism.setUsername(newUsername);
+    }
+    function metadata() {
+      var newMetadata = document.getElementById("metadataText").value;
+      try {
+        Crittercism.setMetadata(JSON.parse(newMetadata));
+      } catch (e) {
+        alert("Invalid JSON, aborting" + e);
+      }
+    }
+    function exceptionOld() {
+      var exceptionName = document.getElementById("exceptionNameText").value;
+      var exceptionMessage = document.getElementById("exceptionMessageText").value;
+      Crittercism.logHandledException({
+        name: exceptionName,
+        message: exceptionMessage
       });
-      setTimeout(function () {
-        Crittercism.leaveBreadcrumb("Breadcrumb: " + new Date());
-        try {
-          JSON.parse('this isnt valid json');
-        } catch (e) {
-          Crittercism.logHandledException(e);
+    }
+    function exception() {
+      try {
+        deepError(5);
+      } catch (e) {
+        Crittercism.logHandledException(e);
+      }
+    }
+    var urls = ["http://www.hearst.com",
+      "http://www.urbanoutfitters.com",
+      "http://www.pinterest.com",
+      "http://www.docusign.com",
+      "http://www.netflix.com",
+      "http://www.paypal.com",
+      "http://www.groupon.com",
+      "http://www.ebay.com",
+      "http://www.yahoo.com",
+      "http://www.linkedin.com",
+      "http://www.bloomberg.com",
+      "http://www.hoteltonight.com",
+      "http://www.npr.org",
+      "http://www.samsclub.com",
+      "http://www.postmates.com",
+      "http://www.teslamotors.com",
+      "http://www.bhphotovideo.com",
+      "http://www.getkeepsafe.com",
+      "http://www.boltcreative.com",
+      "http://www.crittercism.com/customers/"
+    ];
+    function networkRequest() {
+      var methods = ["GET", "POST", "HEAD", "PUT"];
+      var method = methods[randomNext(0, methods.length)];
+      var url = urls[randomNext(0, urls.length)];
+      if (randomNext(0, 2) == 1) {
+        url = url + "?doYouLoveCrittercism=YES";
+      }
+      // latency in milliseconds
+      var latency = Math.floor(4000.0 * Math.random());
+      var bytesRead = randomNext(0, 10000);
+      var bytesSent = randomNext(0, 10000);
+      var responseCode = 200;
+      if (randomNext(0, 5) == 0) {
+        // Some common response other than 200 == OK .
+        var responseCodes = [301, 308, 400, 401, 402, 403, 404, 405, 408, 500, 502, 503];
+        responseCode = responseCodes[randomNext(0, responseCodes.length)];
+      }
+      var errorCode = 0;
+      Crittercism.logNetworkRequest(method, url, latency, bytesRead, bytesSent, responseCode, errorCode);
+    }
+    function truncateString(s) {
+      var answer = s;
+      var maxLength = 800;
+      if (s.length > maxLength) {
+        answer = s.substring(0, maxLength) + "...";
+      }
+      return answer;
+    }
+    function xmlHttpRequest() {
+      var request = new XMLHttpRequest();
+      var url = urls[randomNext(0, urls.length)];
+      request.onreadystatechange = function() {
+        if (request.readyState == 4) {
+          alert(("\nURL: " + url)
+                + ("\nRESPONSE CODE: " + request.status)
+                + ("\n" + truncateString(request.responseText)));
         }
-        Crittercism.logNetworkRequest("GET",
-          "http://www.abc123def456.com",
-          2000,
-          10000,
-          100,
-          200,
-          0)
-      }, 5000);
+      };
+      request.open("GET", url, true);
+      request.send();
+    }
+    function crash() {
+      crash456;       // ridiculous nonsense that causes a crash
+    }
+    function deepError(n) {
+      if (n <= 0) {
+        crash();
+      } else {
+        deepError(n - 1);
+      }
+    }
+    function displayNavigator() {
+      alert(navigator.userAgent);
+    }
+    //console.log("before Crittercism.init");
+    Crittercism.init({
+      appId: 'bf30cf5cafbd4243a0bcf998602e319800555300',
+      appVersion: '1.0',
+      appLoad: true
+      , debug: true
     });
+    //console.log("after Crittercism.init");
   </script>
-</head>
-
+    <p id="critter" align="center">HTML5 DEMO PAGE</p>
+    <table align="center">
+      <tr>
+        <td>
+          <button id="breadcrumbButton" onclick="breadcrumb()">Leave Breadcrumb:</button>
+        </td>
+        <td>
+          <input id="breadcrumbText" type="text" value="My Breadcrumb" />
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button id="usernameButton" onclick="username()">Set Username:</button>
+        </td>
+        <td>
+          <input id="usernameText" type="text" value="My Critter" />
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button id="metadataButton" onclick="metadata()">Set Metadata:</button>
+        </td>
+        <td>
+          <input id="metadataText" type="text" value='{"a":1,"b":2}' />
+        </td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <button id="exceptionButton" onclick="exception()">Log Handled Exception:</button>
+        </td>
+        <td>
+          <input id="exceptionNameText" type="text" value="Error" /><br />
+          <input id="exceptionMessageText" type="text" value="exception message!!!" />
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button id="networkButton" onclick="networkRequest()">Log Network Request</button>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button id="xmlHttpRequestButton" onclick="xmlHttpRequest()">XMLHttpRequest</button>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="center" colspan="2">
+          <button id="crashButton" onclick="deepError(5)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Crash&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" colspan="2">
+          <button id="navigatorButton" onclick="displayNavigator()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Navigator&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" colspan="2">
+          <a href="http://www.google.com">GOOGLE.COM</a>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
